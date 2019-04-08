@@ -82,7 +82,10 @@ class opponent_player(BasePokerPlayer):
         if self.winrate > self.threshhold_winrate_to_raise:
             action = self.__get_raise_action(valid_actions)
         else:
-            action = self.__get_call_action(valid_actions)
+            if self.winrate < self.threshhold_winrate_to_raise / 4:
+                action = self.__get_fold_action(valid_actions)
+            else:
+                action = self.__get_call_action(valid_actions)
 
         if not action:
             action = self.__get_call_action(valid_actions)
@@ -131,7 +134,8 @@ class opponent_player(BasePokerPlayer):
             # opponent_hole_card = self.__get_opponent_hole_card(hand_info)
             opponent_hole_card = gen_cards(self.__get_opponent_hole_card(hand_info))
             self.opponent_win_rate_for_one_game = estimate_hole_card_win_rate(1000, 2, opponent_hole_card, self.community_card)
-
+        print("my winrate: " + str(self.winrate))
+        print("opponent winrate: " + str(self.opponent_win_rate_for_one_game))
         self.__reset()
 
     def __get_ordered_action_list(self, valid_actions):
