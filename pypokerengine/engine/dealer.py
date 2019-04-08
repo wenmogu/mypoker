@@ -91,6 +91,7 @@ class Dealer:
     return uuid
 
   def __notify_game_start(self, max_round):
+    print("dealer.__notify_game_start")
     config = self.__gen_config(max_round)
     start_msg = MessageBuilder.build_game_start_message(config, self.table.seats)
     self.message_handler.process_message(-1, start_msg)

@@ -39,11 +39,11 @@ class RaisedPlayer(BasePokerPlayer):
     pass
 
   def receive_round_result_message(self, winners, hand_info, round_state):
-    pprint.pprint(round_state)
+    pprint.pprint(hand_info)
     # while True:
     #   pass
     print("---------------")
     #pass
 
 def setup_ai():
-  return RandomPlayer()
+  return RaisedPlayer()
