@@ -134,8 +134,8 @@ class opponent_player(BasePokerPlayer):
             # opponent_hole_card = self.__get_opponent_hole_card(hand_info)
             opponent_hole_card = gen_cards(self.__get_opponent_hole_card(hand_info))
             self.opponent_win_rate_for_one_game = estimate_hole_card_win_rate(1000, 2, opponent_hole_card, self.community_card)
-        print("my winrate: " + str(self.winrate))
-        print("opponent winrate: " + str(self.opponent_win_rate_for_one_game))
+        # print("my winrate: " + str(self.winrate))
+        # print("opponent winrate: " + str(self.opponent_win_rate_for_one_game))
         self.__reset()
 
     def __get_ordered_action_list(self, valid_actions):
@@ -177,9 +177,9 @@ class opponent_player(BasePokerPlayer):
         if self.is_at_street_start:
             max_raise_if_i_raise, max_raise_if_i_call = \
                 self.__get_max_raise_at_this_turn(number_of_raises_i_hv, number_of_raises_oppo_hv)
-            print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
-            print(max_raise_if_i_raise)
-            print(max_raise_if_i_call)
+            # print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
+            # print(max_raise_if_i_raise)
+            # print(max_raise_if_i_call)
             max_bet_aim_if_i_raise = min(self.my_lowest_bet + max_raise_if_i_raise, self.street_start_bet + self.street_raise_limit)
             max_bet_aim_if_i_call = min(self.my_lowest_bet + max_raise_if_i_call, self.street_start_bet + self.street_raise_limit)
 
@@ -189,17 +189,17 @@ class opponent_player(BasePokerPlayer):
                                                            [i * self.street_raise_amount + self.my_lowest_bet for i in range(5)]))
             return list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call
         else:
-            print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
+            # print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
 
             max_raise, max_raise_if_i_call = self.__get_max_raise_at_this_turn(number_of_raises_i_hv, number_of_raises_oppo_hv)
             max_bet_aim = min(self.my_lowest_bet + max_raise, self.street_start_bet + self.street_raise_limit)
             list_of_aims_i_can_achieve = [0] + list(filter(lambda aim: aim <= max_bet_aim,
                                                            [i * self.street_raise_amount + self.my_lowest_bet for i in range(5)]))
-            aimstr = ""
-            for i in range(len(list_of_aims_i_can_achieve)):
-                aimstr += str(list_of_aims_i_can_achieve[i]) + ", "
-            print("list_of_aims_i_can_achieve: " + aimstr)
-            return list_of_aims_i_can_achieve, []
+            # aimstr = ""
+            # for i in range(len(list_of_aims_i_can_achieve)):
+            #     aimstr += str(list_of_aims_i_can_achieve[i]) + ", "
+            # print("list_of_aims_i_can_achieve: " + aimstr)
+            # return list_of_aims_i_can_achieve, []
 
     def __get_max_raise_at_this_turn(self, number_of_raises_i_hv, number_of_raises_oppo_hv):
         if min(number_of_raises_oppo_hv, number_of_raises_i_hv) >= 2:
