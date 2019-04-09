@@ -76,9 +76,9 @@ class opponent_player(BasePokerPlayer):
         self.opponent_win_rate_for_one_game = 0
 
     def declare_action(self, valid_actions, hole_card, round_state):
-        achievable_aims = self.__get_achievable_aims_at_this_turn(4 - self.no_of_me_raise_for_one_game,
-                                                                  4 - self.no_of_opponent_raise_for_one_game)
-        print(str(achievable_aims))
+        # achievable_aims = self.__get_achievable_aims_at_this_turn(4 - self.no_of_me_raise_for_one_game,
+        #                                                           4 - self.no_of_opponent_raise_for_one_game)
+        # print(str(achievable_aims))
         if self.winrate > self.threshhold_winrate_to_raise:
             action = self.__get_raise_action(valid_actions)
         else:

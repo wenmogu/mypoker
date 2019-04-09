@@ -187,7 +187,7 @@ class agent(BasePokerPlayer):
         self.community_card = gen_cards(round_state["community_card"])
         self.winrate = estimate_hole_card_win_rate(2000, 2, self.hole_card, self.community_card)
         self.winrate_for_each_street[street] = self.winrate
-        print(self.winrate)
+        # print(self.winrate)
         self.at_street = street
         self.is_at_street_start = True
 
@@ -407,16 +407,16 @@ class agent(BasePokerPlayer):
                                                                        [i * self.street_raise_amount + self.my_lowest_bet for i in range(5)]))
                 return list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call
             else:
-                print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
+                # print("(" + str(number_of_raises_i_hv) + ", " + str(number_of_raises_oppo_hv) + ")")
 
                 max_raise, max_raise_if_i_call = self.__get_max_raise_at_this_turn(number_of_raises_i_hv, number_of_raises_oppo_hv)
                 max_bet_aim = min(self.my_lowest_bet + max_raise, self.street_start_bet + self.street_raise_limit)
                 list_of_aims_i_can_achieve = [0] + list(filter(lambda aim: aim <= max_bet_aim,
                                                                [i * self.street_raise_amount + self.my_lowest_bet for i in range(5)]))
-                aimstr = ""
-                for i in range(len(list_of_aims_i_can_achieve)):
-                    aimstr += str(list_of_aims_i_can_achieve[i]) + ", "
-                print("list_of_aims_i_can_achieve: " + aimstr)
+                # aimstr = ""
+                # for i in range(len(list_of_aims_i_can_achieve)):
+                #     aimstr += str(list_of_aims_i_can_achieve[i]) + ", "
+                # print("list_of_aims_i_can_achieve: " + aimstr)
                 return list_of_aims_i_can_achieve, []
 
     def __get_aim_of_max_payoff(self, list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call):

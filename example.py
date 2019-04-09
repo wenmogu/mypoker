@@ -13,4 +13,4 @@ config.register_player(name="agent", algorithm=agent())
 config.register_player(name="opponent_player", algorithm=opponent_player(6))
 
 
-game_result = start_poker(config, verbose=1) #set verbose=0 to turn off the game messages
+game_result = start_poker(config, verbose=0) #set verbose=0 to turn off the game messages
