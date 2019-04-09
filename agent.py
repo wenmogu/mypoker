@@ -301,7 +301,7 @@ class agent(BasePokerPlayer):
         self.write_to_csv_counter += 1
 
         # write to the csv file every 50 times
-        if (self.write_to_csv_counter == 1):
+        if (self.write_to_csv_counter == 20):
             self.write_to_csv_counter = 0
             # write to the csv file
             download_dir = "qLearning.csv" #where you want the file to be downloaded to 
