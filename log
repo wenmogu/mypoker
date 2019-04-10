@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "mypoker/example.py", line 16, in <module>
+    game_result = start_poker(config, verbose=1) #set verbose=0 to turn off the game messages
+  File "/home/kris/poker/mypoker/pypokerengine/api/game.py", line 16, in start_poker
+    result_message = dealer.start_game(config.max_round)
+  File "/home/kris/poker/mypoker/pypokerengine/engine/dealer.py", line 34, in start_game
+    self.__notify_game_start(max_round)
+  File "/home/kris/poker/mypoker/pypokerengine/engine/dealer.py", line 96, in __notify_game_start
+    self.message_handler.process_message(-1, start_msg)
+  File "/home/kris/poker/mypoker/pypokerengine/engine/dealer.py", line 219, in process_message
+    receiver.receive_notification(msg["message"])
+  File "/home/kris/poker/mypoker/pypokerengine/players.py", line 60, in receive_notification
+    self.receive_game_start_message(info)
+  File "/home/kris/poker/mypoker/agent.py", line 143, in receive_game_start_message
+    with open('round_count.txt', 'r') as txtFile:
+FileNotFoundError: [Errno 2] No such file or directory: 'round_count.txt'
