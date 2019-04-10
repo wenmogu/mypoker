@@ -3,14 +3,14 @@ from time import sleep
 import pprint
 from pypokerengine.utils.card_utils import estimate_hole_card_win_rate, gen_cards
 from math import floor
-from random import random
+from random import random, randint
 import csv
 import os
 
-class game_state: 
+class game_state:
   expectedPayoff = 0
   count = 0
-  
+
   def __init__(self):
     self.expectedPayoff = 0.0;
     self.count = 0;
@@ -19,17 +19,17 @@ class game_state:
     totalPayoff = self.expectedPayoff * self.count
     self.count += 1
     self.expectedPayoff = (totalPayoff + payoff) / self.count
-    
-  def display(self): 
+
+  def display(self):
     return(str(self.expectedPayoff) + " " + str(self.count) + ",")
 
 class agent(BasePokerPlayer):
     RAISE_INDEX = 2
     CALL_INDEX = 1
     FOLD_INDEX = 0
-    player_types = { 
+    player_types = {
         "type1" : 0,
-        "type2" : 1, 
+        "type2" : 1,
         "type3" : 2,
         "type4" : 3
     }
@@ -109,9 +109,10 @@ class agent(BasePokerPlayer):
                                                                   4 - self.no_of_opponent_raise_for_one_game)
         # print(str(achievable_aims_if_raise) + " " + str(achievable_aims_if_call))
         r = random()
-        if (r > 0):
+        if (r > 0.8):
             achievable_aim_of_max_payoff, max_payoff = self.__get_aim_of_max_payoff(achievable_aims_if_raise, achievable_aims_if_call)
         else:
+            # i dont choose fold when i go by random aim.
             achievable_aim_of_max_payoff, max_payoff = self.__get_an_random_aim(achievable_aims_if_raise, achievable_aims_if_call)
         if achievable_aim_of_max_payoff in achievable_aims_if_raise:
             if achievable_aim_of_max_payoff == 0:
@@ -228,11 +229,11 @@ class agent(BasePokerPlayer):
             if (session == "flop"):
                 for bid in round_state["action_histories"]["flop"]:
                     self.__add_to_array(flop, bid)
-        
+
             if (session == "turn"):
                 for bid in round_state["action_histories"]["turn"]:
                     self.__add_to_array(turn, bid)
-          
+
             if (session == "river"):
                 for bid in round_state["action_histories"]["river"]:
                     self.__add_to_array(river, bid)
@@ -242,7 +243,7 @@ class agent(BasePokerPlayer):
         if (winners[0]["uuid"] != self.uuid):
             # print("player lost")
             earning = -earning
-        
+
         nextRow = 0
         prevIndex = 0
 
@@ -283,7 +284,7 @@ class agent(BasePokerPlayer):
             index = max(turn) / 10 + prevIndex
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
             nextRow = (nextRow * 6 + index + 2) / 2
-            prevIndex = index 
+            prevIndex = index
         print("after turn nextRow is: ", nextRow)
 
         # nextRow will be 21, 22, ..., 80
@@ -304,7 +305,7 @@ class agent(BasePokerPlayer):
         if (self.write_to_csv_counter == 20):
             self.write_to_csv_counter = 0
             # write to the csv file
-            download_dir = "qLearning.csv" #where you want the file to be downloaded to 
+            download_dir = "qLearning.csv" #where you want the file to be downloaded to
             csv = open(download_dir, "w") #"w" indicates that you're writing strings to the file
 
             for i in range(4):
@@ -431,6 +432,9 @@ class agent(BasePokerPlayer):
             if aim == 0:
                 aim_to_expected_payoff[0] = -self.my_current_bet
             else:
+                print("my table to look at: " + str(table_to_look_at))
+                print("my row number: " + str(my_row_number))
+                print("my aim: " + str(int(aim/10)))
                 aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
                 aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
 
@@ -445,12 +449,14 @@ class agent(BasePokerPlayer):
     def __get_an_random_aim(self, list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call):
         merged_aim_list = list_of_aims_i_can_achieve_if_raise + \
                           list(set(list_of_aims_i_can_achieve_if_call) - set(list_of_aims_i_can_achieve_if_raise))
-        r = random()
-        l = len(merged_aim_list)
-        aim_index = int(floor(r * l))
-        if aim_index == l:
-            aim_index -= 1
-        return merged_aim_list[aim_index], 0
+
+        l = len(merged_aim_list) - 1
+        if l <= 0:
+          print("not possibleeeeeee that i have no aims available, I should always have at least 2 aims!")
+          return ""
+        else:
+          r = randint(1, l)
+          return merged_aim_list[r], 0
 
     def __get_max_raise_at_this_turn(self, number_of_raises_i_hv, number_of_raises_oppo_hv):
         if min(number_of_raises_oppo_hv, number_of_raises_i_hv) >= 2:
