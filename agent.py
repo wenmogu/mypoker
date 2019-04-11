@@ -523,6 +523,7 @@ class agent(BasePokerPlayer):
             if player_action == "raise":
                 self.no_of_me_raise_for_one_game += 1
                 self.my_lowest_bet += raise_amount
+                self.my_current_bet = (pot - raise_amount) / 2 + raise_amount
                 if self.my_current_bet == self.sb_amount:
                     self.my_current_bet = self.sb_amount * 2 + raise_amount
                 else:
