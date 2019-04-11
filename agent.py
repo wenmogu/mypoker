@@ -45,6 +45,7 @@ class agent(BasePokerPlayer):
         # updated by round
         self.hole_card = []
         self.numberOfRounds = 0
+        self.is_choose_aim_randomly = True
 
         # updated by street
         self.community_card = []
@@ -82,6 +83,7 @@ class agent(BasePokerPlayer):
     def __reset(self):
         # updated by round
         self.hole_card = []
+        self.is_choose_aim_randomly = True
 
         # updated by street
         self.community_card = []
@@ -108,13 +110,13 @@ class agent(BasePokerPlayer):
         achievable_aims_if_raise, achievable_aims_if_call = \
             self.__get_achievable_aims_at_this_turn(4 - self.no_of_me_raise_for_one_game,
                                                                   4 - self.no_of_opponent_raise_for_one_game)
-        # print(str(achievable_aims_if_raise) + " " + str(achievable_aims_if_call))
-        r = random()
-        if (r > 0.8):
-            achievable_aim_of_max_payoff, max_payoff = self.__get_aim_of_max_payoff(achievable_aims_if_raise, achievable_aims_if_call)
-        else:
+        # for training purposes
+        if (self.is_choose_aim_randomly):
             # i dont choose fold when i go by random aim.
             achievable_aim_of_max_payoff, max_payoff = self.__get_an_random_aim(achievable_aims_if_raise, achievable_aims_if_call)
+        else:
+            achievable_aim_of_max_payoff, max_payoff = self.__get_aim_of_max_payoff(achievable_aims_if_raise, achievable_aims_if_call)
+
         if achievable_aim_of_max_payoff in achievable_aims_if_raise:
             if achievable_aim_of_max_payoff == 0:
                 action = self.__get_fold_action(valid_actions)
@@ -142,11 +144,12 @@ class agent(BasePokerPlayer):
         self.sb_amount = game_info["rule"]["small_blind_amount"]
         self.my_lowest_bet = 2 * self.sb_amount
 
+        # for training purposes
         with open('round_count.txt', 'r') as txtFile:
             if txtFile.mode == 'r':
                 round_count = txtFile.read()
                 self.numberOfRounds = int(round_count, 10)
-        # for training purposes
+
         exists = os.path.isfile('qLearning.csv')
         if not exists:
             print("qLearning.csv file is not found")
@@ -184,6 +187,11 @@ class agent(BasePokerPlayer):
 
     def receive_round_start_message(self, round_count, hole_card, seats):
         self.hole_card = gen_cards(hole_card)
+        r = random()
+        if r > 0.618:
+            self.is_choose_aim_randomly = False
+        else:
+            self.is_choose_aim_randomly = True
 
     def receive_street_start_message(self, street, round_state):
         self.community_card = gen_cards(round_state["community_card"])
@@ -448,9 +456,9 @@ class agent(BasePokerPlayer):
             if aim == 0:
                 aim_to_expected_payoff[0] = -self.my_current_bet
             else:
-                print("my table to look at: " + str(table_to_look_at))
-                print("my row number: " + str(my_row_number))
-                print("my aim: " + str(int(aim/10)))
+                # print("my table to look at: " + str(table_to_look_at))
+                # print("my row number: " + str(my_row_number))
+                # print("my aim: " + str(int(aim/10)))
                 aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
                 aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
 
@@ -524,10 +532,6 @@ class agent(BasePokerPlayer):
                 self.no_of_me_raise_for_one_game += 1
                 self.my_lowest_bet += raise_amount
                 self.my_current_bet = (pot - raise_amount) / 2 + raise_amount
-                if self.my_current_bet == self.sb_amount:
-                    self.my_current_bet = self.sb_amount * 2 + raise_amount
-                else:
-                    self.my_current_bet += raise_amount
 
             elif player_action == "call":
                 self.my_lowest_bet = pot / 2
@@ -538,11 +542,11 @@ class agent(BasePokerPlayer):
             elif player_action == "raise":
                 self.no_of_opponent_raise_for_one_game += 1
                 self.my_lowest_bet += raise_amount
-            else:
+            elif player_action == "call":
+                self.my_lowest_bet = pot / 2
+                self.my_current_bet = pot / 2
                 if self.no_of_opponent_raise_for_one_game < 4:
                     self.no_of_opponent_call_before_using_up_raise_for_one_game += 1
-                    self.my_lowest_bet = pot / 2
-                    self.my_current_bet = pot / 2
 
     def __get_opponent_hole_card(self, hand_info):
         for item in hand_info or []:
