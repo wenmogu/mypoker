@@ -534,6 +534,7 @@ class agent(BasePokerPlayer):
                 if self.no_of_opponent_raise_for_one_game < 4:
                     self.no_of_opponent_call_before_using_up_raise_for_one_game += 1
                     self.my_lowest_bet = pot / 2
+                    self.my_current_bet = pot / 2
 
     def __get_opponent_hole_card(self, hand_info):
         for item in hand_info or []:
