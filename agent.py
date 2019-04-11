@@ -218,6 +218,8 @@ class agent(BasePokerPlayer):
             opponent_hole_card = gen_cards(self.__get_opponent_hole_card(hand_info))
             self.opponent_win_rate_for_one_game = estimate_hole_card_win_rate(1000, 2, opponent_hole_card, self.community_card)
 
+        # pp = pprint.PrettyPrinter(indent=2)
+        # pp.pprint(round_state)
         # for training purposes
         preflop = [0]
         flop = [0]
@@ -260,9 +262,10 @@ class agent(BasePokerPlayer):
             self.tables[tableType][0][int(index)].update(earning)
             nextRow = index / 2
             prevIndex = index
-        print("after preflop nextRow is: ", nextRow)
-
         # nextRow is either 1, 2, 3 or 4 here
+        # the bid value here is always nextRow * 20
+        print("after preflop nextRow ", nextRow)
+
         if -1 in flop:
             print("fold is called at flop")
             # self.table1[nextRow][0].update(earning)
@@ -271,11 +274,11 @@ class agent(BasePokerPlayer):
             # index is the new value / 10 that is bidded in that round
             index = max(flop) / 10 + prevIndex
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            nextRow = (nextRow * 6 + index + 2) / 2
+            nextRow = nextRow * 4 + index / 2
             prevIndex = index
-        print("after flop nextRow is: ", nextRow)
+        # nextRow is either 5, 10, 11, ..., 24
+        print("after flop nextRow, my bidValue is: ", nextRow, prevIndex*10)
 
-        # nextRow is either 9, 10, 11, ..., 20
         if -1 in turn:
             print("fold is called at turn")
             # self.table1[nextRow][0].update(earning)
@@ -284,11 +287,16 @@ class agent(BasePokerPlayer):
             # index is the new value / 10 that is bidded in that round
             index = max(turn) / 10 + prevIndex
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            nextRow = (nextRow * 6 + index + 2) / 2
+            # multiply by 5 works as it updates 5 values, account for current bid value error
+            if (index % 4 != 0):
+                nextRow = nextRow * 5 + (index + 2) / 4 - 1 + (nextRow / 5 -1) * 2
+            else:
+                nextRow = nextRow * 5 + index / 4 - 1 + (nextRow / 5 - 1) * 2
             prevIndex = index
-        print("after turn nextRow is: ", nextRow)
+        # nextRow will be 25, 26, ..., 133
+        # unusued rows are (35, 46, 57, 68, 79, 90, 101, 112, 123)
+        print("after turn nextRow, my bidValue is: ", nextRow, prevIndex*10)
 
-        # nextRow will be 21, 22, ..., 80
         if -1 in river:
             print("fold is called at river")
             # self.table1[nextRow][0].update(earning)
