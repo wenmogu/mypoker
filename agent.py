@@ -75,8 +75,9 @@ class agent(BasePokerPlayer):
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
+        w, h = 34, 133
         for i in range(4):
-            self.tables.append([[game_state() for i in range(34)] for j in range(80)])
+            self.tables.append([[game_state() for i in range(w)] for j in range(h)])
 
     def __reset(self):
         # updated by round
@@ -153,29 +154,29 @@ class agent(BasePokerPlayer):
             with open('qLearning.csv', 'r') as csvFile:
                 stored_table = list(csv.reader(csvFile))
                 # update for table type 1
-                for i in range(1, 80):
+                for i in range(1, 133):
                     for j in range(0, 34):
                         parsedInput = stored_table[i][j].split(" ")
                         self.tables[0][i-1][j].expectedPayoff = float(parsedInput[0])
                         self.tables[0][i-1][j].count = int(parsedInput[1])
                 # update for table type 2
-                for i in range(82, 161):
+                for i in range(135, 267):
                     for j in range(0, 34):
                         parsedInput = stored_table[i][j].split(" ")
-                        self.tables[1][i-82][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[1][i-82][j].count = int(parsedInput[1])
+                        self.tables[1][i-135][j].expectedPayoff = float(parsedInput[0])
+                        self.tables[1][i-135][j].count = int(parsedInput[1])
                 # update for table type 3
-                for i in range(163, 242):
+                for i in range(269, 401):
                     for j in range(0, 34):
                         parsedInput = stored_table[i][j].split(" ")
-                        self.tables[2][i-163][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[2][i-163][j].count = int(parsedInput[1])
+                        self.tables[2][i-269][j].expectedPayoff = float(parsedInput[0])
+                        self.tables[2][i-269][j].count = int(parsedInput[1])
                 # update for table type 4
-                for i in range(244, 323):
+                for i in range(403, 535):
                     for j in range(0, 34):
                         parsedInput = stored_table[i][j].split(" ")
-                        self.tables[3][i-244][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[3][i-244][j].count = int(parsedInput[1])
+                        self.tables[3][i-403][j].expectedPayoff = float(parsedInput[0])
+                        self.tables[3][i-403][j].count = int(parsedInput[1])
             csvFile.close()
         # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[0]]))
         # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[1]]))
