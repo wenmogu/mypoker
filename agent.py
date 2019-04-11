@@ -332,23 +332,30 @@ class agent(BasePokerPlayer):
         pass
 
     def __locate_row_number_of_street_in_table(self, street):
+        # assume bet before each turn is correct
         if street == "preflop":
             return 0
         elif street == "flop":
             my_bet_at_start_of_flop = self.my_bet_at_start_of_street["flop"]
+            # print("bet before flop is: ", my_bet_at_start_of_flop)
             return my_bet_at_start_of_flop / 10 / 2
         elif street == "turn":
             my_bet_at_start_of_flop = self.my_bet_at_start_of_street["flop"]
             row_number_at_flop = my_bet_at_start_of_flop / 10 / 2
             my_bet_at_start_of_turn = self.my_bet_at_start_of_street["turn"]
-            return (row_number_at_flop * 6 + my_bet_at_start_of_turn / 10 + 2) / 2
+            # print("bet before turn is: ", my_bet_at_start_of_turn)
+            return row_number_at_flop * 4 + my_bet_at_start_of_turn / 10 / 2
         elif street == "river":
             my_bet_at_start_of_flop = self.my_bet_at_start_of_street["flop"]
             row_number_at_flop = my_bet_at_start_of_flop / 10 / 2
             my_bet_at_start_of_turn = self.my_bet_at_start_of_street["turn"]
-            row_number_at_turn = (row_number_at_flop * 6 + my_bet_at_start_of_turn / 10 + 2) / 2
+            row_number_at_turn = row_number_at_flop * 4 + my_bet_at_start_of_turn / 10 / 2
             my_bet_at_start_of_river = self.my_bet_at_start_of_street["river"]
-            return (row_number_at_turn * 6 + my_bet_at_start_of_river / 10 + 2) / 2
+            # print("bet before river is: ", my_bet_at_start_of_turn)
+            index_for_bet = int(my_bet_at_start_of_turn / 10)
+            if (index_for_bet % 4 != 0):
+                return (row_number_at_turn * 5 + (index_for_bet + 2) / 4 - 1 + (row_number_at_turn / 5 -1) * 2)
+            return (row_number_at_turn * 5 + index_for_bet / 4 - 1 + (row_number_at_turn / 5 - 1) * 2)
 
     def __findTableType(self, street):
         winrate_at_street = self.winrate_for_each_street[street]
