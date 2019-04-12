@@ -77,7 +77,7 @@ class agent(BasePokerPlayer):
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
-        w, h = 34, 133
+        w, h = 40, 133
         for i in range(4):
             self.tables.append([[game_state() for i in range(w)] for j in range(h)])
 
@@ -160,25 +160,25 @@ class agent(BasePokerPlayer):
                 stored_table = list(csv.reader(csvFile))
                 # update for table type 1
                 for i in range(1, 133):
-                    for j in range(0, 34):
+                    for j in range(0, 40):
                         parsedInput = stored_table[i][j].split(" ")
                         self.tables[0][i-1][j].expectedPayoff = float(parsedInput[0])
                         self.tables[0][i-1][j].count = int(parsedInput[1])
                 # update for table type 2
                 for i in range(135, 267):
-                    for j in range(0, 34):
+                    for j in range(0, 40):
                         parsedInput = stored_table[i][j].split(" ")
                         self.tables[1][i-135][j].expectedPayoff = float(parsedInput[0])
                         self.tables[1][i-135][j].count = int(parsedInput[1])
                 # update for table type 3
                 for i in range(269, 401):
-                    for j in range(0, 34):
+                    for j in range(0, 40):
                         parsedInput = stored_table[i][j].split(" ")
                         self.tables[2][i-269][j].expectedPayoff = float(parsedInput[0])
                         self.tables[2][i-269][j].count = int(parsedInput[1])
                 # update for table type 4
                 for i in range(403, 535):
-                    for j in range(0, 34):
+                    for j in range(0, 40):
                         parsedInput = stored_table[i][j].split(" ")
                         self.tables[3][i-403][j].expectedPayoff = float(parsedInput[0])
                         self.tables[3][i-403][j].count = int(parsedInput[1])
