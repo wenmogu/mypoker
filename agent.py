@@ -116,9 +116,10 @@ class agent(BasePokerPlayer):
         if (self.is_choose_aim_randomly):
             # i dont choose fold when i go by random aim.
             achievable_aim_of_max_payoff, max_payoff = self.__get_an_random_aim(achievable_aims_if_raise, achievable_aims_if_call)
+            self.aim_of_street = achievable_aim_of_max_payoff
         else:
             achievable_aim_of_max_payoff, max_payoff = self.__get_aim_of_max_payoff(achievable_aims_if_raise, achievable_aims_if_call)
-
+            self.aim_of_street = achievable_aim_of_max_payoff
         if achievable_aim_of_max_payoff in achievable_aims_if_raise:
             if achievable_aim_of_max_payoff == 0:
                 action = self.__get_fold_action(valid_actions)
