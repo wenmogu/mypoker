@@ -56,6 +56,7 @@ class agent(BasePokerPlayer):
         self.street_start_bet = 0
         self.street_raise_amount = 0
         self.street_raise_limit = 0
+        self.aim_of_street = 0
         self.my_bet_at_start_of_street = {}
 
         # updated by turn
@@ -94,6 +95,7 @@ class agent(BasePokerPlayer):
         self.street_start_bet = 0
         self.street_raise_amount = 0
         self.street_raise_limit = 0
+        self.aim_of_street = 0
         self.my_bet_at_start_of_street = {}
 
         # updated by turn
@@ -200,6 +202,7 @@ class agent(BasePokerPlayer):
         # print(self.winrate)
         self.at_street = street
         self.is_at_street_start = True
+        self.aim_of_street = 0
 
         if street == "preflop":
             self.street_start_bet = 0
@@ -281,6 +284,15 @@ class agent(BasePokerPlayer):
             tableType = self.__findTableType("flop")
             # index is the new value / 10 that is bidded in that round
             index = max(flop) / 10 + prevIndex
+            try:
+                self.tables[tableType][int(nextRow)][int(index)].update(earning)
+            except:
+                print(self.my_bet_at_start_of_street)
+                print("i m updating the table at flop")
+                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
+                print("My tableType: " + str(tableType))
+                print("My nextRow: " + str(int(nextRow)))
+                print("My index: " + str(int(index)))
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
             nextRow = nextRow * 4 + index / 2
             prevIndex = index
@@ -294,6 +306,15 @@ class agent(BasePokerPlayer):
             tableType = self.__findTableType("turn")
             # index is the new value / 10 that is bidded in that round
             index = max(turn) / 10 + prevIndex
+            try:
+                self.tables[tableType][int(nextRow)][int(index)].update(earning)
+            except:
+                print(self.my_bet_at_start_of_street)
+                print("i m updating the table at turn")
+                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
+                print("My tableType: " + str(tableType))
+                print("My nextRow: " + str(int(nextRow)))
+                print("My index: " + str(int(index)))
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
             # multiply by 5 works as it updates 5 values, account for current bid value error
             if (index % 4 != 0):
@@ -311,8 +332,16 @@ class agent(BasePokerPlayer):
         elif (len(river) > 1):
             tableType = self.__findTableType("river")
             index = max(river) / 10 + prevIndex
+            try:
+                self.tables[tableType][int(nextRow)][int(index)].update(earning)
+            except:
+                print(self.my_bet_at_start_of_street)
+                print("i m updating the table at river")
+                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
+                print("My tableType: " + str(tableType))
+                print("My nextRow: " + str(int(nextRow)))
+                print("My index: " + str(int(index)))
             self.tables[tableType][int(nextRow)][int(index)].update(earning)
-
         # print("-------------------------------")
         # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.table]))
         # print("-------------------------------")
@@ -447,40 +476,53 @@ class agent(BasePokerPlayer):
     def __get_aim_of_max_payoff(self, list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call):
         merged_aim_list = list_of_aims_i_can_achieve_if_raise + \
                           list(set(list_of_aims_i_can_achieve_if_call) - set(list_of_aims_i_can_achieve_if_raise))
-        # in this version, we do not consider the probability of chaning to another type of agent in the next street
-        table_to_look_at = self.__findTableType(self.at_street)
+        if self.aim_of_street == 0 or (self.aim_of_street not in merged_aim_list):
+            # in this version, we do not consider the probability of chaning to another type of agent in the next street
+            table_to_look_at = self.__findTableType(self.at_street)
 
-        my_row_number = self.__locate_row_number_of_street_in_table(self.at_street)
-        aim_to_expected_payoff = {}
-        for aim in merged_aim_list:
-            if aim == 0:
-                aim_to_expected_payoff[0] = -self.my_current_bet
-            else:
-                # print("my table to look at: " + str(table_to_look_at))
-                # print("my row number: " + str(my_row_number))
-                # print("my aim: " + str(int(aim/10)))
-                aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
-                aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
+            my_row_number = self.__locate_row_number_of_street_in_table(self.at_street)
+            aim_to_expected_payoff = {}
+            for aim in merged_aim_list:
+                if aim == 0:
+                    aim_to_expected_payoff[0] = -self.my_current_bet
+                else:
+                    # print("my table to look at: " + str(table_to_look_at))
+                    # print("my row number: " + str(my_row_number))
+                    # print("my aim: " + str(int(aim/10)))
+                    try:
+                        aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
+                        aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
+                    except:
+                        print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
+                        print("my table to look at: " + str(table_to_look_at))
+                        print("my row number: " + str(my_row_number))
+                        print("my aim: " + str(int(aim/10)))
+                        print(sys.exc_info()[0])
+                        return self.__get_an_random_aim(list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call)
 
-        max_payoff = max(aim_to_expected_payoff.values())
-        aims_of_max_payoff = []
-        for key, value in aim_to_expected_payoff.items():
-            if value == max_payoff:
-                aims_of_max_payoff.append(key)
-        #return the one that is closest to achieve
-        return min(aims_of_max_payoff), max_payoff
+            max_payoff = max(aim_to_expected_payoff.values())
+            aims_of_max_payoff = []
+            for key, value in aim_to_expected_payoff.items():
+                if value == max_payoff:
+                    aims_of_max_payoff.append(key)
+            #return the one that is closest to achieve
+            return min(aims_of_max_payoff), max_payoff
+        else:
+            return self.aim_of_street, 0
 
     def __get_an_random_aim(self, list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call):
         merged_aim_list = list_of_aims_i_can_achieve_if_raise + \
                           list(set(list_of_aims_i_can_achieve_if_call) - set(list_of_aims_i_can_achieve_if_raise))
-
-        l = len(merged_aim_list) - 1
-        if l <= 0:
-          print("not possibleeeeeee that i have no aims available, I should always have at least 2 aims!")
-          return ""
+        if self.aim_of_street == 0 or (self.aim_of_street not in merged_aim_list):
+            l = len(merged_aim_list) - 1
+            if l <= 0:
+              print("not possibleeeeeee that i have no aims available, I should always have at least 2 aims!")
+              return ""
+            else:
+              r = randint(1, l)
+              return merged_aim_list[r], 0
         else:
-          r = randint(1, l)
-          return merged_aim_list[r], 0
+            return self.aim_of_street, 0
 
     def __get_max_raise_at_this_turn(self, number_of_raises_i_hv, number_of_raises_oppo_hv):
         if min(number_of_raises_oppo_hv, number_of_raises_i_hv) >= 2:
