@@ -23,7 +23,7 @@ class game_state:
   def display(self):
     return(str(self.expectedPayoff) + " " + str(self.count) + ",")
 
-class agent(BasePokerPlayer):
+class Group30Player(BasePokerPlayer):
     RAISE_INDEX = 2
     CALL_INDEX = 1
     FOLD_INDEX = 0
@@ -148,10 +148,14 @@ class agent(BasePokerPlayer):
         self.my_lowest_bet = 2 * self.sb_amount
 
         # for training purposes
-        with open('round_count.txt', 'r') as txtFile:
-            if txtFile.mode == 'r':
-                round_count = txtFile.read()
-                self.numberOfRounds = int(round_count, 10)
+        countExists = os.path.isfile('round_count.txt')
+        if not countExists:
+            print("round_count.txt file is not found")
+        else:
+            with open('round_count.txt', 'r') as txtFile:
+                if txtFile.mode == 'r':
+                    round_count = txtFile.read()
+                    self.numberOfRounds = int(round_count, 10)
 
         exists = os.path.isfile('qLearning.csv')
         if not exists:
@@ -398,11 +402,11 @@ class agent(BasePokerPlayer):
     def __findTableType(self, street):
         winrate_at_street = self.winrate_for_each_street[street]
 
-        if winrate_at_street <= agent.winrate_ceiling_for_table_0:
+        if winrate_at_street <= Group30Player.winrate_ceiling_for_table_0:
             return 0
-        elif winrate_at_street <= agent.winrate_ceiling_for_table_1:
+        elif winrate_at_street <= Group30Player.winrate_ceiling_for_table_1:
             return 1
-        elif winrate_at_street <= agent.winrate_ceiling_for_table_2:
+        elif winrate_at_street <= Group30Player.winrate_ceiling_for_table_2:
             return 2
         else:
             return 3
@@ -420,31 +424,31 @@ class agent(BasePokerPlayer):
         # if the action is not available, the index will be -1.
         for i in valid_actions:
             if i["action"] == "raise":
-                action_index_list[agent.RAISE_INDEX] = i
+                action_index_list[Group30Player.RAISE_INDEX] = i
             if i["action"] == "call":
-                action_index_list[agent.CALL_INDEX] = i
+                action_index_list[Group30Player.CALL_INDEX] = i
             else:
-                action_index_list[agent.FOLD_INDEX] = i
+                action_index_list[Group30Player.FOLD_INDEX] = i
 
         return action_index_list
 
     def __get_raise_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.RAISE_INDEX]
+        action_info = action_index_list[Group30Player.RAISE_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
 
     def __get_call_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.CALL_INDEX]
+        action_info = action_index_list[Group30Player.CALL_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
 
     def __get_fold_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.FOLD_INDEX]
+        action_info = action_index_list[Group30Player.FOLD_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
@@ -622,4 +626,4 @@ class agent(BasePokerPlayer):
                 #     return (bit & mask) >> 8  # 511 = (1 << 9) -1
 
 def setup_ai():
-    return agent()
+    return Group30Player()
