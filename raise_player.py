@@ -52,7 +52,7 @@ class RaisedPlayer(BasePokerPlayer):
     # while True:
     #   pass
     # print("---------------")
-    #pass
+    pass
 
 def setup_ai():
   return RaisedPlayer()
