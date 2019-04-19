@@ -255,6 +255,8 @@ class Group30Player(BasePokerPlayer):
         pass
 
     def __update_oppo_table_type(self, round_state):
+        new_choose_opponent_table = self.choose_opponent_table
+        
         if (round_state["action_histories"]["preflop"][0]["uuid"] == self.opponent_uuid):
             opponent_sb = True
         else:
