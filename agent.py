@@ -39,7 +39,8 @@ class Group30Player(BasePokerPlayer):
     winrate_ceiling_for_table_3 = 1
 
     def __init__(self):
-        super(object).__init__()
+        # super(object).__init__() # uncomment to run on python 3.6
+        pass # ensure this is python 2.7 compatible
         self.sb_amount = 0
 
         # updated by round
@@ -168,7 +169,7 @@ class Group30Player(BasePokerPlayer):
 
         # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
         for f in range(1, 5):
-            file_name = "oppo_" + str(f * 2) + "_combined.csv"
+            file_name = "Group30Player_oppo_" + str(f * 2) + "_combined.csv"
             exists = os.path.isfile(file_name)
             if not exists:
                 print(file_name + " csv is not found")
@@ -254,6 +255,8 @@ class Group30Player(BasePokerPlayer):
         pass
 
     def __update_oppo_table_type(self, round_state):
+        new_choose_opponent_table = self.choose_opponent_table
+        
         if (round_state["action_histories"]["preflop"][0]["uuid"] == self.opponent_uuid):
             opponent_sb = True
         else:

@@ -39,8 +39,8 @@ class Group30Player_training(BasePokerPlayer):
     winrate_ceiling_for_table_3 = 1
 
     def __init__(self):
-        super(object).__init__()
-        # pass
+        # super(object).__init__() # uncomment to run on python 3.6
+        pass # ensure this is python 2.7 compatible
         self.sb_amount = 0
 
         # updated by round
