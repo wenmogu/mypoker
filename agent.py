@@ -169,7 +169,7 @@ class Group30Player(BasePokerPlayer):
 
         # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
         for f in range(1, 5):
-            file_name = "oppo_" + str(f * 2) + "_combined.csv"
+            file_name = "Group30Player_oppo_" + str(f * 2) + "_combined.csv"
             exists = os.path.isfile(file_name)
             if not exists:
                 print(file_name + " csv is not found")
