@@ -23,7 +23,7 @@ class game_state:
   def display(self):
     return(str(self.expectedPayoff) + " " + str(self.count) + ",")
 
-class agent(BasePokerPlayer):
+class Group30Player(BasePokerPlayer):
     RAISE_INDEX = 2
     CALL_INDEX = 1
     FOLD_INDEX = 0
@@ -67,19 +67,25 @@ class agent(BasePokerPlayer):
         self.no_of_me_raise_for_one_game = 0
 
         # to determine opponent type
+        self.opponent_uuid = ""
         self.no_of_opponent_raise_for_one_game = 0
         self.no_of_opponent_call_before_using_up_raise_for_one_game = 0
         self.opponent_win_rate_for_one_game = 0
         self.no_of_opponent_raise_for_three_game = 0
         self.no_of_opponent_call_before_using_up_raise_for_three_game = 0
         self.no_of_opponent_fold = 0
+        self.call_to_raise_ratio = 0 # start by using random table
 
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
+        self.choose_opponent_table = 0
+        self.opponent_tables = []
         w, h = 40, 133
-        for i in range(4):
-            self.tables.append([[game_state() for i in range(w)] for j in range(h)])
+        for f in range(5):
+            for i in range(4):
+                self.tables.append([[game_state() for i in range(w)] for j in range(h)])
+            self.opponent_tables.append(self.tables)
 
     def __reset(self):
         # updated by round
@@ -144,48 +150,60 @@ class agent(BasePokerPlayer):
         return action
 
     def receive_game_start_message(self, game_info):
+        for seat in game_info["seats"]:
+            if seat["uuid"] != self.uuid:
+                self.opponent_uuid = seat["uuid"]
         self.sb_amount = game_info["rule"]["small_blind_amount"]
         self.my_lowest_bet = 2 * self.sb_amount
 
         # for training purposes
-        with open('round_count.txt', 'r') as txtFile:
-            if txtFile.mode == 'r':
-                round_count = txtFile.read()
-                self.numberOfRounds = int(round_count, 10)
-
-        exists = os.path.isfile('qLearning.csv')
-        if not exists:
-            print("qLearning.csv file is not found")
+        countExists = os.path.isfile('round_count.txt')
+        if not countExists:
+            print("round_count.txt file is not found")
         else:
-            with open('qLearning.csv', 'r') as csvFile:
-                stored_table = list(csv.reader(csvFile))
-                # update for table type 1
-                for i in range(1, 133):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[0][i-1][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[0][i-1][j].count = int(parsedInput[1])
-                # update for table type 2
-                for i in range(135, 267):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[1][i-135][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[1][i-135][j].count = int(parsedInput[1])
-                # update for table type 3
-                for i in range(269, 401):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[2][i-269][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[2][i-269][j].count = int(parsedInput[1])
-                # update for table type 4
-                for i in range(403, 535):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[3][i-403][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[3][i-403][j].count = int(parsedInput[1])
-            csvFile.close()
-        # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[0]]))
-        # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[1]]))
+            with open('round_count.txt', 'r') as txtFile:
+                if txtFile.mode == 'r':
+                    round_count = txtFile.read()
+                    self.numberOfRounds = int(round_count, 10)
+
+        # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
+        for f in range(1, 5):
+            file_name = "oppo_" + str(f * 2) + "_combined.csv"
+            exists = os.path.isfile(file_name)
+            if not exists:
+                print(file_name + " csv is not found")
+            else:
+                with open(file_name, 'r') as csvFile:
+                    stored_table = list(csv.reader(csvFile))
+                    # update for table type 1
+                    for i in range(1, 133):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_tables[f][0][i-1][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_tables[f][0][i-1][j].count = int(parsedInput[1])
+                    # update for table type 2
+                    for i in range(135, 267):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_tables[f][1][i-135][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_tables[f][1][i-135][j].count = int(parsedInput[1])
+                    # update for table type 3
+                    for i in range(269, 401):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_tables[f][2][i-269][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_tables[f][2][i-269][j].count = int(parsedInput[1])
+                    # update for table type 4
+                    for i in range(403, 535):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_tables[f][3][i-403][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_tables[f][3][i-403][j].count = int(parsedInput[1])
+                csvFile.close()
+            # checking if table populated correctly
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_tables[1][0]]))
+            # print('-----------------------------')
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_tables[1][1]]))
         pass
 
     def receive_round_start_message(self, round_count, hole_card, seats):
@@ -366,8 +384,48 @@ class agent(BasePokerPlayer):
             txt.write(str(self.numberOfRounds))
             txt.close()
         # NOT for training purposes
+        self.__update_oppo_table_type(round_state)
         self.__reset()
         pass
+    def __update_oppo_table_type(self, round_state):
+        if (round_state["action_histories"]["preflop"][0]["uuid"] == self.opponent_uuid):
+            opponent_sb = True
+        else:
+            opponent_sb = False
+
+        if (self.no_of_opponent_raise_for_one_game != 0):
+            call_to_raise_ratio = 1.0 * self.no_of_opponent_call_before_using_up_raise_for_one_game / self.no_of_opponent_raise_for_one_game
+        else:
+            call_to_raise_ratio = 0
+        
+        if (opponent_sb):
+            if (call_to_raise_ratio >= 0 and call_to_raise_ratio <= 0.75):
+                new_choose_opponent_table = 1
+            elif (call_to_raise_ratio >= 1 and call_to_raise_ratio <= 1.5):
+                new_choose_opponent_table = 2
+            elif (call_to_raise_ratio >= 1.7 and call_to_raise_ratio <= 3):
+                new_choose_opponent_table = 3
+            elif (call_to_raise_ratio >= 4 and call_to_raise_ratio <= 8):
+                new_choose_opponent_table = 4
+            # print("ratio in SB is: ", call_to_raise_ratio)
+            # print("opponent table in SB is: ", self.choose_opponent_table)
+        else:
+            if (call_to_raise_ratio >= 0 and call_to_raise_ratio <= 0.4):
+                new_choose_opponent_table = 1
+            elif (call_to_raise_ratio >= 0.5 and call_to_raise_ratio <= 0.8):
+                new_choose_opponent_table = 2
+            elif (call_to_raise_ratio >= 1 and call_to_raise_ratio <= 1.5):
+                new_choose_opponent_table = 3
+            elif (call_to_raise_ratio >= 2 and call_to_raise_ratio <= 4):
+                new_choose_opponent_table = 4
+            # print("ratio in BB is: ", call_to_raise_ratio)
+            # print("opponent table in BB is: ", self.choose_opponent_table)
+
+        if (new_choose_opponent_table * 2 - self.choose_opponent_table * 2 >= 4):
+            new_choose_opponent_table = 0
+
+        self.choose_opponent_table = new_choose_opponent_table
+        # print("opponent type is: ", self.choose_opponent_table)
 
     def __locate_row_number_of_street_in_table(self, street):
         # assume bet before each turn is correct
@@ -398,11 +456,11 @@ class agent(BasePokerPlayer):
     def __findTableType(self, street):
         winrate_at_street = self.winrate_for_each_street[street]
 
-        if winrate_at_street <= agent.winrate_ceiling_for_table_0:
+        if winrate_at_street <= Group30Player.winrate_ceiling_for_table_0:
             return 0
-        elif winrate_at_street <= agent.winrate_ceiling_for_table_1:
+        elif winrate_at_street <= Group30Player.winrate_ceiling_for_table_1:
             return 1
-        elif winrate_at_street <= agent.winrate_ceiling_for_table_2:
+        elif winrate_at_street <= Group30Player.winrate_ceiling_for_table_2:
             return 2
         else:
             return 3
@@ -420,31 +478,31 @@ class agent(BasePokerPlayer):
         # if the action is not available, the index will be -1.
         for i in valid_actions:
             if i["action"] == "raise":
-                action_index_list[agent.RAISE_INDEX] = i
+                action_index_list[Group30Player.RAISE_INDEX] = i
             if i["action"] == "call":
-                action_index_list[agent.CALL_INDEX] = i
+                action_index_list[Group30Player.CALL_INDEX] = i
             else:
-                action_index_list[agent.FOLD_INDEX] = i
+                action_index_list[Group30Player.FOLD_INDEX] = i
 
         return action_index_list
 
     def __get_raise_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.RAISE_INDEX]
+        action_info = action_index_list[Group30Player.RAISE_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
 
     def __get_call_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.CALL_INDEX]
+        action_info = action_index_list[Group30Player.CALL_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
 
     def __get_fold_action(self, valid_actions):
         action_index_list = self.__get_ordered_action_list(valid_actions)
-        action_info = action_index_list[agent.FOLD_INDEX]
+        action_info = action_index_list[Group30Player.FOLD_INDEX]
         if action_info != -1:
             return action_info["action"]
         return None
@@ -491,14 +549,14 @@ class agent(BasePokerPlayer):
                     # print("my row number: " + str(my_row_number))
                     # print("my aim: " + str(int(aim/10)))
                     try:
-                        aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
+                        aim_game_state = self.opponent_tables[self.choose_opponent_table][table_to_look_at][int(my_row_number)][int(aim/10)]
                         aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
                     except:
-                        print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
+                        print(str(len(self.opponent_tables[self.choose_opponent_table])) + " " + str(len(self.opponent_tables[0])) + " " + str(len(self.opponent_tables[0][0])))
                         print("my table to look at: " + str(table_to_look_at))
                         print("my row number: " + str(my_row_number))
                         print("my aim: " + str(int(aim/10)))
-                        print(sys.exc_info()[0])
+                        # print(sys.exc_info()[0])
                         return self.__get_an_random_aim(list_of_aims_i_can_achieve_if_raise, list_of_aims_i_can_achieve_if_call)
 
             max_payoff = max(aim_to_expected_payoff.values())
@@ -622,4 +680,4 @@ class agent(BasePokerPlayer):
                 #     return (bit & mask) >> 8  # 511 = (1 << 9) -1
 
 def setup_ai():
-    return agent()
+    return Group30Player()
