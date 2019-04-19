@@ -1,9 +1,6 @@
 from pypokerengine.players import BasePokerPlayer
 from time import sleep
-import random as rand
 import pprint
-
-count = 0
 
 class RaisedPlayer(BasePokerPlayer):
 
@@ -11,20 +8,14 @@ class RaisedPlayer(BasePokerPlayer):
     # print("Raise Player")
     # print("Valid Actions : ")
     # pprint.pprint(valid_actions)
-    # for i in valid_actions:
-    r = rand.random()
-    # if count < 1 and len(valid_actions) == 3:
-        # count += 1
-    if r < 0.2:
-        return valid_actions[2]["action"]
-    else:
-        return valid_actions[1]["action"]
-        # print("(R1)Taken Actions : ")
-        # pprint.pprint(action)
-        # action = 'raise'
-        # pprint.pprint(valid_actions)
-
-    return action  # action returned here is sent to the poker engine
+    for i in valid_actions:
+        if i["action"] == "raise":
+            action = i["action"]
+            # print("(R1)Taken Actions : ")
+            # pprint.pprint(action)
+            # action = 'raise'
+            # pprint.pprint(valid_actions)
+            return action  # action returned here is sent to the poker engine
     action = valid_actions[1]["action"]
     # print("(R2)Taken Actions : ")
     # pprint.pprint(action)
@@ -55,4 +46,4 @@ class RaisedPlayer(BasePokerPlayer):
     pass
 
 def setup_ai():
-  return RaisedPlayer()
+  return RandomPlayer()

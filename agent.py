@@ -46,7 +46,7 @@ class Group30Player(BasePokerPlayer):
         # updated by round
         self.hole_card = []
         self.numberOfRounds = 0
-        self.is_choose_aim_randomly = True
+        self.is_choose_aim_randomly = False
 
         # updated by street
         self.community_card = []
@@ -91,7 +91,7 @@ class Group30Player(BasePokerPlayer):
     def __reset(self):
         # updated by round
         self.hole_card = []
-        self.is_choose_aim_randomly = True
+        self.is_choose_aim_randomly = False
 
         # updated by street
         self.community_card = []
@@ -167,8 +167,8 @@ class Group30Player(BasePokerPlayer):
                     round_count = txtFile.read()
                     self.numberOfRounds = int(round_count, 10)
 
-        # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
-        for f in range(1, 5):
+        # update opponent tables 0,1,2,3,4 to opponent types 2,4,6,8
+        for f in range(5):
             file_name = "Group30Player_oppo_" + str(f * 2) + "_combined.csv"
             exists = os.path.isfile(file_name)
             if not exists:
@@ -213,7 +213,7 @@ class Group30Player(BasePokerPlayer):
         if r > 0.618:
             self.is_choose_aim_randomly = False
         else:
-            self.is_choose_aim_randomly = True
+            self.is_choose_aim_randomly = False
 
     def receive_street_start_message(self, street, round_state):
         self.community_card = gen_cards(round_state["community_card"])
@@ -265,34 +265,33 @@ class Group30Player(BasePokerPlayer):
         if (self.no_of_opponent_raise_for_one_game != 0):
             call_to_raise_ratio = 1.0 * self.no_of_opponent_call_before_using_up_raise_for_one_game / self.no_of_opponent_raise_for_one_game
         else:
-            call_to_raise_ratio = 0
+            call_to_raise_ratio = 0.1
         
         if (opponent_sb):
-            if (call_to_raise_ratio >= 0 and call_to_raise_ratio <= 0.75):
+            if (call_to_raise_ratio >= 0.1 and call_to_raise_ratio <= 0.75):
                 new_choose_opponent_table = 1
             elif (call_to_raise_ratio >= 1 and call_to_raise_ratio <= 1.5):
                 new_choose_opponent_table = 2
             elif (call_to_raise_ratio >= 1.7 and call_to_raise_ratio <= 3):
                 new_choose_opponent_table = 3
-            elif (call_to_raise_ratio >= 4 and call_to_raise_ratio <= 8):
+            elif (call_to_raise_ratio >= 4 and call_to_raise_ratio <= 8 or call_to_raise_ratio == 0):
                 new_choose_opponent_table = 4
             # print("ratio in SB is: ", call_to_raise_ratio)
             # print("opponent table in SB is: ", self.choose_opponent_table)
         else:
-            if (call_to_raise_ratio >= 0 and call_to_raise_ratio <= 0.4):
+            if (call_to_raise_ratio >= 0.1 and call_to_raise_ratio <= 0.4):
                 new_choose_opponent_table = 1
             elif (call_to_raise_ratio >= 0.5 and call_to_raise_ratio <= 0.8):
                 new_choose_opponent_table = 2
             elif (call_to_raise_ratio >= 1 and call_to_raise_ratio <= 1.5):
                 new_choose_opponent_table = 3
-            elif (call_to_raise_ratio >= 2 and call_to_raise_ratio <= 4):
+            elif (call_to_raise_ratio >= 2 and call_to_raise_ratio <= 4 or call_to_raise_ratio == 0):
                 new_choose_opponent_table = 4
             # print("ratio in BB is: ", call_to_raise_ratio)
             # print("opponent table in BB is: ", self.choose_opponent_table)
 
-        # remove ability to switch to table 0 initially
-        # if (new_choose_opponent_table * 2 - self.choose_opponent_table * 2 >= 4):
-            # new_choose_opponent_table = 0
+        if (new_choose_opponent_table * 2 - self.choose_opponent_table * 2 >= 4):
+            new_choose_opponent_table = 0
 
         self.choose_opponent_table = new_choose_opponent_table
         # print("opponent type is: ", self.choose_opponent_table)
