@@ -77,9 +77,12 @@ class Group30Player(BasePokerPlayer):
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
+        self.opponent_types = []
         w, h = 40, 133
-        for i in range(4):
-            self.tables.append([[game_state() for i in range(w)] for j in range(h)])
+        for f in range(5):
+            for i in range(4):
+                self.tables.append([[game_state() for i in range(w)] for j in range(h)])
+            self.opponent_types.append(self.tables)
 
     def __reset(self):
         # updated by round
@@ -157,39 +160,44 @@ class Group30Player(BasePokerPlayer):
                     round_count = txtFile.read()
                     self.numberOfRounds = int(round_count, 10)
 
-        exists = os.path.isfile('qLearning.csv')
-        if not exists:
-            print("qLearning.csv file is not found")
-        else:
-            with open('qLearning.csv', 'r') as csvFile:
-                stored_table = list(csv.reader(csvFile))
-                # update for table type 1
-                for i in range(1, 133):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[0][i-1][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[0][i-1][j].count = int(parsedInput[1])
-                # update for table type 2
-                for i in range(135, 267):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[1][i-135][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[1][i-135][j].count = int(parsedInput[1])
-                # update for table type 3
-                for i in range(269, 401):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[2][i-269][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[2][i-269][j].count = int(parsedInput[1])
-                # update for table type 4
-                for i in range(403, 535):
-                    for j in range(0, 40):
-                        parsedInput = stored_table[i][j].split(" ")
-                        self.tables[3][i-403][j].expectedPayoff = float(parsedInput[0])
-                        self.tables[3][i-403][j].count = int(parsedInput[1])
-            csvFile.close()
-        # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[0]]))
-        # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[1]]))
+        # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
+        for f in range(1, 5):
+            file_name = "oppo_" + str(f * 2) + "_combined.csv"
+            exists = os.path.isfile(file_name)
+            if not exists:
+                print(file_name + " csv is not found")
+            else:
+                with open(file_name, 'r') as csvFile:
+                    stored_table = list(csv.reader(csvFile))
+                    # update for table type 1
+                    for i in range(1, 133):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_types[f][0][i-1][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_types[f][0][i-1][j].count = int(parsedInput[1])
+                    # update for table type 2
+                    for i in range(135, 267):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_types[f][1][i-135][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_types[f][1][i-135][j].count = int(parsedInput[1])
+                    # update for table type 3
+                    for i in range(269, 401):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_types[f][2][i-269][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_types[f][2][i-269][j].count = int(parsedInput[1])
+                    # update for table type 4
+                    for i in range(403, 535):
+                        for j in range(0, 40):
+                            parsedInput = stored_table[i][j].split(" ")
+                            self.opponent_types[f][3][i-403][j].expectedPayoff = float(parsedInput[0])
+                            self.opponent_types[f][3][i-403][j].count = int(parsedInput[1])
+                csvFile.close()
+            # checking if table populated correctly
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_types[1][0]]))
+            # print('-----------------------------')
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_types[1][1]]))
         pass
 
     def receive_round_start_message(self, round_count, hole_card, seats):
