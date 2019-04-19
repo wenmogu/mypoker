@@ -80,13 +80,10 @@ class Group30Player_training(BasePokerPlayer):
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
-        self.choose_opponent_table = 0
-        self.opponent_tables = []
         w, h = 40, 133
         for f in range(5):
             for i in range(4):
                 self.tables.append([[game_state() for i in range(w)] for j in range(h)])
-            self.opponent_tables.append(self.tables)
 
     def __reset(self):
         # updated by round
@@ -169,7 +166,7 @@ class Group30Player_training(BasePokerPlayer):
 
         # update opponent tables 1,2,3,4 to opponent types 2,4,6,8
         for f in range(1, 5):
-            file_name = "oppo_" + str(f * 2) + "_combined.csv"
+            file_name = "oppo_random.csv"
             exists = os.path.isfile(file_name)
             if not exists:
                 print(file_name + " csv is not found")
@@ -180,31 +177,31 @@ class Group30Player_training(BasePokerPlayer):
                     for i in range(1, 133):
                         for j in range(0, 40):
                             parsedInput = stored_table[i][j].split(" ")
-                            self.opponent_tables[f][0][i-1][j].expectedPayoff = float(parsedInput[0])
-                            self.opponent_tables[f][0][i-1][j].count = int(parsedInput[1])
+                            self.tables[0][i-1][j].expectedPayoff = float(parsedInput[0])
+                            self.tables[0][i-1][j].count = int(parsedInput[1])
                     # update for table type 2
                     for i in range(135, 267):
                         for j in range(0, 40):
                             parsedInput = stored_table[i][j].split(" ")
-                            self.opponent_tables[f][1][i-135][j].expectedPayoff = float(parsedInput[0])
-                            self.opponent_tables[f][1][i-135][j].count = int(parsedInput[1])
+                            self.tables[1][i-135][j].expectedPayoff = float(parsedInput[0])
+                            self.tables[1][i-135][j].count = int(parsedInput[1])
                     # update for table type 3
                     for i in range(269, 401):
                         for j in range(0, 40):
                             parsedInput = stored_table[i][j].split(" ")
-                            self.opponent_tables[f][2][i-269][j].expectedPayoff = float(parsedInput[0])
-                            self.opponent_tables[f][2][i-269][j].count = int(parsedInput[1])
+                            self.tables[2][i-269][j].expectedPayoff = float(parsedInput[0])
+                            self.tables[2][i-269][j].count = int(parsedInput[1])
                     # update for table type 4
                     for i in range(403, 535):
                         for j in range(0, 40):
                             parsedInput = stored_table[i][j].split(" ")
-                            self.opponent_tables[f][3][i-403][j].expectedPayoff = float(parsedInput[0])
-                            self.opponent_tables[f][3][i-403][j].count = int(parsedInput[1])
+                            self.tables[3][i-403][j].expectedPayoff = float(parsedInput[0])
+                            self.tables[3][i-403][j].count = int(parsedInput[1])
                 csvFile.close()
             # checking if table populated correctly
-            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_tables[1][0]]))
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[1][0]]))
             # print('-----------------------------')
-            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.opponent_tables[1][1]]))
+            # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[1][1]]))
         pass
 
     def receive_round_start_message(self, round_count, hole_card, seats):
@@ -365,18 +362,26 @@ class Group30Player_training(BasePokerPlayer):
         # print("-------------------------------")
         # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.table]))
         # print("-------------------------------")
+
+        self.__write_to_csv("oppo_random.csv", 50)
+        # self.__update_oppo_table_type(round_state)
+        self.__reset()
+        # print("round ended")
+        pass
+
+    def __write_to_csv(self, file_name, limit):
         self.write_to_csv_counter += 1
 
-        # write to the csv file every 50 times
-        if (self.write_to_csv_counter == 20):
+        # write to the csv file according to limit
+        if (self.write_to_csv_counter == limit):
             self.write_to_csv_counter = 0
             # write to the csv file
-            download_dir = "oppo_random.csv" #where you want the file to be downloaded to
+            download_dir = file_name #where you want the file to be downloaded to
             csv = open(download_dir, "w") #"w" indicates that you're writing strings to the file
 
             for i in range(4):
                 csv.write('table' + str(i) + '\n')
-                writer = csv.write('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in selfself.opponent_tables[0][i]]))
+                writer = csv.write('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[i]]))
                 csv.write('\n')
             csv.close()
 
@@ -384,10 +389,6 @@ class Group30Player_training(BasePokerPlayer):
             txt = open(round_count_file, "w")
             txt.write(str(self.numberOfRounds))
             txt.close()
-        # NOT for training purposes
-        self.__update_oppo_table_type(round_state)
-        self.__reset()
-        pass
 
     def __update_oppo_table_type(self, round_state):
         if (round_state["action_histories"]["preflop"][0]["uuid"] == self.opponent_uuid):
@@ -551,10 +552,10 @@ class Group30Player_training(BasePokerPlayer):
                     # print("my row number: " + str(my_row_number))
                     # print("my aim: " + str(int(aim/10)))
                     try:
-                        aim_game_state = self.opponent_tables[self.choose_opponent_table][table_to_look_at][int(my_row_number)][int(aim/10)]
+                        aim_game_state = self.tables[table_to_look_at][int(my_row_number)][int(aim/10)]
                         aim_to_expected_payoff[aim] = aim_game_state.expectedPayoff
                     except:
-                        print(str(len(self.opponent_tables[self.choose_opponent_table])) + " " + str(len(self.opponent_tables[0])) + " " + str(len(self.opponent_tables[0][0])))
+                        print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
                         print("my table to look at: " + str(table_to_look_at))
                         print("my row number: " + str(my_row_number))
                         print("my aim: " + str(int(aim/10)))

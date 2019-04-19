@@ -11,8 +11,8 @@ config = setup_config(max_round=100000000000000000, initial_stack=10000000000000
 
 
 
-config.register_player(name="opponent_player", algorithm=opponent_player(6))
-# config.register_player(name="agent", algorithm=Group30Player())
+# config.register_player(name="opponent_player", algorithm=opponent_player(6))
+config.register_player(name="agent", algorithm=Group30Player())
 config.register_player(name="agent_training", algorithm=Group30Player_training())
 # config.register_player(name="raise_player", algorithm=RaisedPlayer())
 # config.register_player(name="randomplayer", algorithm=RandomPlayer())

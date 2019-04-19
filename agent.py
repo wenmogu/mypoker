@@ -79,7 +79,7 @@ class Group30Player(BasePokerPlayer):
         # for training purposes
         self.write_to_csv_counter = 0
         self.tables = []
-        self.choose_opponent_table = 0
+        self.choose_opponent_table = 1 # initialize to be aggressive level 2
         self.opponent_tables = []
         w, h = 40, 133
         for f in range(5):
@@ -248,145 +248,11 @@ class Group30Player(BasePokerPlayer):
             opponent_hole_card = gen_cards(self.__get_opponent_hole_card(hand_info))
             self.opponent_win_rate_for_one_game = estimate_hole_card_win_rate(1000, 2, opponent_hole_card, self.community_card)
 
-        # pp = pprint.PrettyPrinter(indent=2)
-        # pp.pprint(round_state)
-        # for training purposes
-        preflop = [0]
-        flop = [0]
-        turn = [0]
-        river = [0]
-        for session in round_state["action_histories"]:
-            if (session == "preflop"):
-                for bid in round_state["action_histories"]["preflop"]:
-                    self.__add_to_array(preflop, bid)
-            if (session == "flop"):
-                for bid in round_state["action_histories"]["flop"]:
-                    self.__add_to_array(flop, bid)
-
-            if (session == "turn"):
-                for bid in round_state["action_histories"]["turn"]:
-                    self.__add_to_array(turn, bid)
-
-            if (session == "river"):
-                for bid in round_state["action_histories"]["river"]:
-                    self.__add_to_array(river, bid)
-
-
-        earning = max(preflop) + max(flop) + max(turn) + max(river)
-        if (winners[0]["uuid"] != self.uuid):
-            # print("player lost")
-            earning = -earning
-
-        nextRow = 0
-        prevIndex = 0
-
-        tableType = self.__findTableType("preflop")
-        # print("type is", tableType)
-
-        if -1 in preflop:
-            # only update fold action, nothing else
-            print("fold is called at preflop")
-            # self.table1[0][0].update(earning)
-        elif(len(preflop) > 1):
-            index = max(preflop) / 10
-            self.tables[tableType][0][int(index)].update(earning)
-            nextRow = index / 2
-            prevIndex = index
-        # nextRow is either 1, 2, 3 or 4 here
-        # the bid value here is always nextRow * 20
-        print("after preflop nextRow ", nextRow)
-
-        if -1 in flop:
-            print("fold is called at flop")
-            # self.table1[nextRow][0].update(earning)
-        elif (len(flop) > 1):
-            tableType = self.__findTableType("flop")
-            # index is the new value / 10 that is bidded in that round
-            index = max(flop) / 10 + prevIndex
-            try:
-                self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            except:
-                print(self.my_bet_at_start_of_street)
-                print("i m updating the table at flop")
-                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
-                print("My tableType: " + str(tableType))
-                print("My nextRow: " + str(int(nextRow)))
-                print("My index: " + str(int(index)))
-            self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            nextRow = nextRow * 4 + index / 2
-            prevIndex = index
-        # nextRow is either 5, 10, 11, ..., 24
-        print("after flop nextRow, my bidValue is: ", nextRow, prevIndex*10)
-
-        if -1 in turn:
-            print("fold is called at turn")
-            # self.table1[nextRow][0].update(earning)
-        elif (len(turn) > 1):
-            tableType = self.__findTableType("turn")
-            # index is the new value / 10 that is bidded in that round
-            index = max(turn) / 10 + prevIndex
-            try:
-                self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            except:
-                print(self.my_bet_at_start_of_street)
-                print("i m updating the table at turn")
-                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
-                print("My tableType: " + str(tableType))
-                print("My nextRow: " + str(int(nextRow)))
-                print("My index: " + str(int(index)))
-            self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            # multiply by 5 works as it updates 5 values, account for current bid value error
-            if (index % 4 != 0):
-                nextRow = nextRow * 5 + (index + 2) / 4 - 1 + (nextRow / 5 -1) * 2
-            else:
-                nextRow = nextRow * 5 + index / 4 - 1 + (nextRow / 5 - 1) * 2
-            prevIndex = index
-        # nextRow will be 25, 26, ..., 133
-        # unusued rows are (35, 46, 57, 68, 79, 90, 101, 112, 123)
-        print("after turn nextRow, my bidValue is: ", nextRow, prevIndex*10)
-
-        if -1 in river:
-            print("fold is called at river")
-            # self.table1[nextRow][0].update(earning)
-        elif (len(river) > 1):
-            tableType = self.__findTableType("river")
-            index = max(river) / 10 + prevIndex
-            try:
-                self.tables[tableType][int(nextRow)][int(index)].update(earning)
-            except:
-                print(self.my_bet_at_start_of_street)
-                print("i m updating the table at river")
-                print(str(len(self.tables)) + " " + str(len(self.tables[0])) + " " + str(len(self.tables[0][0])))
-                print("My tableType: " + str(tableType))
-                print("My nextRow: " + str(int(nextRow)))
-                print("My index: " + str(int(index)))
-            self.tables[tableType][int(nextRow)][int(index)].update(earning)
-        # print("-------------------------------")
-        # print('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.table]))
-        # print("-------------------------------")
-        self.write_to_csv_counter += 1
-
-        # write to the csv file every 50 times
-        if (self.write_to_csv_counter == 20):
-            self.write_to_csv_counter = 0
-            # write to the csv file
-            download_dir = "qLearning.csv" #where you want the file to be downloaded to
-            csv = open(download_dir, "w") #"w" indicates that you're writing strings to the file
-
-            for i in range(4):
-                csv.write('table' + str(i) + '\n')
-                writer = csv.write('\n'.join([''.join(['{:4}'.format(state.display()) for state in row]) for row in self.tables[i]]))
-                csv.write('\n')
-            csv.close()
-
-            round_count_file = "round_count.txt"
-            txt = open(round_count_file, "w")
-            txt.write(str(self.numberOfRounds))
-            txt.close()
         # NOT for training purposes
         self.__update_oppo_table_type(round_state)
         self.__reset()
         pass
+
     def __update_oppo_table_type(self, round_state):
         if (round_state["action_histories"]["preflop"][0]["uuid"] == self.opponent_uuid):
             opponent_sb = True
@@ -421,8 +287,9 @@ class Group30Player(BasePokerPlayer):
             # print("ratio in BB is: ", call_to_raise_ratio)
             # print("opponent table in BB is: ", self.choose_opponent_table)
 
-        if (new_choose_opponent_table * 2 - self.choose_opponent_table * 2 >= 4):
-            new_choose_opponent_table = 0
+        # remove ability to switch to table 0 initially
+        # if (new_choose_opponent_table * 2 - self.choose_opponent_table * 2 >= 4):
+            # new_choose_opponent_table = 0
 
         self.choose_opponent_table = new_choose_opponent_table
         # print("opponent type is: ", self.choose_opponent_table)
